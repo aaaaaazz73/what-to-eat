@@ -32,22 +32,45 @@ const manualLocationInput = document.getElementById('manualLocationInput');
 const confirmLocationButton = document.getElementById('confirmLocationButton');
 const cancelLocationButton = document.getElementById('cancelLocationButton');
 
-// 初始化
-window.addEventListener('load', () => {
-    console.log('🚀 應用程式啟動');
+// 追蹤事件監聽器是否已設定
+let eventListenersSetup = false;
 
-    // 檢查 Google Maps API 是否載入
-    if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
-        showError('❌ Google Maps API 未載入，請檢查 API Key 是否正確設定');
-        console.error('Google Maps API 未載入！請確認：');
-        console.error('1. API Key 已在 index.html 中正確設定');
-        console.error('2. 已啟用 Maps JavaScript API 和 Places API');
-        return;
+// Google Maps API 載入完成後的 callback（由 API 自動呼叫）
+window.initApp = function() {
+    console.log('🚀 應用程式啟動');
+    console.log('✅ Google Maps API 載入成功');
+
+    if (!eventListenersSetup) {
+        setupEventListeners();
+        eventListenersSetup = true;
+    }
+    getUserLocation();
+};
+
+// 頁面載入時先設定事件監聽器並禁用按鈕
+document.addEventListener('DOMContentLoaded', () => {
+    if (!eventListenersSetup) {
+        setupEventListeners();
+        eventListenersSetup = true;
+    }
+    // 禁用按鈕直到 Google Maps API 載入完成
+    if (chooseButton) {
+        chooseButton.disabled = true;
+        chooseButton.style.opacity = '0.6';
+        chooseButton.querySelector('span').textContent = '⏳ 載入中...';
     }
 
-    console.log('✅ Google Maps API 載入成功');
-    getUserLocation();
-    setupEventListeners();
+    // 設定 10 秒超時檢查：如果 Google Maps API 還沒載入，顯示錯誤
+    setTimeout(() => {
+        if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
+            console.error('❌ Google Maps API 載入超時');
+            showError('Google Maps API 載入失敗，請檢查網路連線或重新整理頁面');
+            locationText.textContent = 'API 載入失敗';
+            if (chooseButton) {
+                chooseButton.querySelector('span').textContent = '❌ 載入失敗';
+            }
+        }
+    }, 10000); // 10 秒超時
 });
 
 // 設定事件監聽器
@@ -132,20 +155,27 @@ function getUserLocation() {
             let errorMsg = '無法取得位置';
             switch(error.code) {
                 case error.PERMISSION_DENIED:
-                    errorMsg = '請允許位置存取權限';
+                    errorMsg = '請允許位置存取權限或使用手動輸入';
                     console.error('❌ 使用者拒絕位置權限');
                     break;
                 case error.POSITION_UNAVAILABLE:
-                    errorMsg = '位置資訊無法取得';
+                    errorMsg = '位置資訊無法取得，請使用手動輸入';
                     console.error('❌ 位置資訊不可用');
                     break;
                 case error.TIMEOUT:
-                    errorMsg = '定位請求逾時';
+                    errorMsg = '定位請求逾時，請使用手動輸入';
                     console.error('❌ 定位請求逾時');
                     break;
             }
             showError(errorMsg);
             locationText.textContent = errorMsg;
+
+            // 即使定位失敗，仍然啟用按鈕（用戶可以手動輸入地點）
+            if (chooseButton && service) {
+                chooseButton.disabled = false;
+                chooseButton.style.opacity = '1';
+                chooseButton.querySelector('span').textContent = '🎲 開始選擇';
+            }
         }
     );
 }
@@ -163,6 +193,13 @@ function initializeGoogleMaps() {
     });
 
     service = new google.maps.places.PlacesService(map);
+
+    // 啟用「開始選擇」按鈕
+    if (chooseButton) {
+        chooseButton.disabled = false;
+        chooseButton.style.opacity = '1';
+        chooseButton.querySelector('span').textContent = '🎲 開始選擇';
+    }
 
     // 預載入餐廳資料（使用預設的價位篩選）
     preloadRestaurants();
@@ -595,6 +632,9 @@ function confirmManualLocation() {
             // 重新初始化地圖服務
             if (map) {
                 map.setCenter(userLocation);
+            } else {
+                // 如果地圖還沒初始化，現在初始化它
+                initializeGoogleMaps();
             }
 
             showError('地點已更新，請重新搜尋餐廳');
