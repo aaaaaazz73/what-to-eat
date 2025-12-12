@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今天吃什麼？ - 智能美食選擇器</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">🍽️ 今天吃什麼？</h1>
+            <p class="subtitle">讓我幫你決定附近的美食！</p>
+        </header>
+
+        <!-- 定位資訊 -->
+        <div class="location-info" id="locationInfo">
+            <span class="location-icon">📍</span>
+            <span id="locationText">正在取得位置...</span>
+            <button class="manual-button" id="manualButton">手動</button>
+        </div>
+
+        <!-- 手動輸入地點 -->
+        <div class="manual-input-container" id="manualInputContainer" style="display: none;">
+            <input type="text" id="manualLocationInput" placeholder="請輸入地點（例如：台北101、信義區）" />
+            <button class="confirm-location-button" id="confirmLocationButton">確定</button>
+            <button class="cancel-location-button" id="cancelLocationButton">取消</button>
+        </div>
+
+        <!-- 價位篩選 -->
+        <div class="filter-section">
+            <h3>選擇預算範圍</h3>
+            <div class="price-filters">
+                <label class="price-option">
+                    <input type="checkbox" value="0,1" checked>
+                    <span class="price-label">$ 銅板價</span>
+                    <span class="price-range">NT$ 0-150</span>
+                </label>
+                <label class="price-option">
+                    <input type="checkbox" value="2">
+                    <span class="price-label">$$ 小資族</span>
+                    <span class="price-range">NT$ 150-300</span>
+                </label>
+                <label class="price-option">
+                    <input type="checkbox" value="3">
+                    <span class="price-label">$$$ 好料的</span>
+                    <span class="price-range">NT$ 300-600</span>
+                </label>
+                <label class="price-option">
+                    <input type="checkbox" value="4">
+                    <span class="price-label">$$$$ 奢華饗宴</span>
+                    <span class="price-range">NT$ 600+</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- 選擇按鈕 -->
+        <button class="choose-button" id="chooseButton">
+            <span>🎲 開始選擇</span>
+        </button>
+
+        <!-- 結果顯示區 -->
+        <div class="results-container" id="resultsContainer">
+            <div class="results-grid" id="resultsGrid"></div>
+
+            <button class="reroll-button" id="rerollButton" style="display: none;">
+                <span>🔄 不滿意？再抽一次！</span>
+            </button>
+        </div>
+
+        <!-- Loading 提示 -->
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>搜尋附近美食中...</p>
+        </div>
+
+        <!-- 錯誤提示 -->
+        <div class="error-message" id="errorMessage" style="display: none;"></div>
+    </div>
+
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAKf97nguKbN3GMcQPFxys9CngRwBCO_I8&libraries=places&language=zh-TW"></script>
+    <script src="script.js"></script>
+</body>
+</html>
